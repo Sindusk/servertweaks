@@ -26,6 +26,9 @@ task dist(type: Zip) {
         into(project.name, {
             from jar
         })
+        into(project.name+"/libs", {
+            from fileTree(dir: 'libs', include: '*')
+        })
         from fileTree(dir: 'mods', include: '*')
     })
 

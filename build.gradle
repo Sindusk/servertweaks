@@ -20,7 +20,6 @@ jar {
     archiveName "${project.name}.jar"
 }
 
-
 task dist(type: Zip) {
     into("mods", {
         into(project.name, {

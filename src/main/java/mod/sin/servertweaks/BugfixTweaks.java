@@ -22,6 +22,11 @@ public class BugfixTweaks {
     public static boolean disableEpicMapTwitter = true;
     public static boolean removeInfidelError = true;
     public static boolean trueSteamAuthentication = true;
+    public static boolean fixZombieEnchantError = true;
+    public static boolean fixEpicMissionNaming = true;
+    public static boolean fixSpellsWithoutEnterPermission = true;
+    public static boolean allowFreedomMyceliumAbsorb = true;
+
 	public static void preInit(){
 		try {
         	ClassPool classPool = HookManager.getInstance().getClassPool();
@@ -235,45 +240,78 @@ public class BugfixTweaks {
             
             if(removeInfidelError){
 	            // Remove infidel error
+				Util.setReason("Remove infidel error [Creature Enchantment].");
 	            CtClass ctCreatureEnchantment = classPool.get("com.wurmonline.server.spells.CreatureEnchantment");
 	            replace = "$_ = true;";
-	            Util.setReason("Remove infidel error.");
 	            Util.instrumentDeclared(thisClass, ctCreatureEnchantment, "precondition", "accepts", replace);
-	            /*ctCreatureEnchantment.getDeclaredMethod("precondition").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("accepts")) {
-	                        m.replace("$_ = true;");
-	                        return;
-	                    }
-	                }
-	            });*/
+
+				Util.setReason("Remove infidel error [Karma Enchantment].");
 	            CtClass ctKarmaEnchantment = classPool.get("com.wurmonline.server.spells.KarmaEnchantment");
-	            Util.setReason("Remove infidel error.");
+				replace = "$_ = true;";
 	            Util.instrumentDeclared(thisClass, ctKarmaEnchantment, "precondition", "accepts", replace);
-	            /*ctKarmaEnchantment.getDeclaredMethod("precondition").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("accepts")) {
-	                        m.replace("$_ = true;");
-	                        return;
-	                    }
-	                }
-	            });*/
+
+				Util.setReason("Fix Bless infidel error.");
+				CtClass ctBless = classPool.get("com.wurmonline.server.spells.Bless");
+				replace = "$_ = true;";
+				Util.instrumentDeclared(thisClass, ctBless, "precondition", "accepts", replace);
+
+				Util.setReason("Fix Refresh infidel error.");
+				CtClass ctRefresh = classPool.get("com.wurmonline.server.spells.Refresh");
+				replace = "$_ = true;";
+				Util.instrumentDeclared(thisClass, ctRefresh, "precondition", "accepts", replace);
+            }
+
+            if(fixZombieEnchantError){
+				Util.setReason("Remove spam from creature enchantments on zombies.");
+				CtClass ctCreatureEnchantment = classPool.get("com.wurmonline.server.spells.CreatureEnchantment");
+				replace = "$_ = false;";
+				Util.instrumentDeclared(thisClass, ctCreatureEnchantment, "precondition", "isReborn", replace);
+			}
+
+			if(fixEpicMissionNaming){
+                Util.setReason("Fix epic mission naming.");
+                CtClass ctEpicServerStatus = classPool.get("com.wurmonline.server.epic.EpicServerStatus");
+                replace = "if($2.equals(\"\")){" +
+                        "  $2 = com.wurmonline.server.deities.Deities.getDeityName($1);" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctEpicServerStatus, "generateNewMissionForEpicEntity", replace);
+            }
+
+            if(fixSpellsWithoutEnterPermission){
+                Util.setReason("Fix permissions in structures so players cannot cast spells unless they have enter permission.");
+                CtClass ctStructure = classPool.get("com.wurmonline.server.structures.Structure");
+                replace = "if(com.wurmonline.server.behaviours.Actions.isActionDietySpell(action)){"
+                        + "  return this.mayPass(performer);"
+                        + "}"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctStructure, "isActionAllowed", "isActionImproveOrRepair", replace);
+            }
+
+            if(allowFreedomMyceliumAbsorb){
+                Util.setReason("Enable Mycelium to be absorbed from Freedom Isles.");
+                CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
+                CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+                CtClass ctTileBehaviour = classPool.get("com.wurmonline.server.behaviours.TileBehaviour");
+                CtClass[] params = {
+                        ctAction,
+                        ctCreature,
+                        CtClass.intType,
+                        CtClass.intType,
+                        CtClass.booleanType,
+                        CtClass.intType,
+                        CtClass.shortType,
+                        CtClass.floatType
+                };
+                String desc = Descriptor.ofMethod(CtClass.booleanType, params);
+                replace = "$_ = 3;";
+                Util.instrumentDescribed(thisClass, ctTileBehaviour, "action", desc, "getKingdomTemplateId", replace);
             }
 
             if(trueSteamAuthentication){
-            	// Use SteamID as password for accounts
+				Util.setReason("Use SteamID as password for accounts.");
 	            CtClass ctLoginHandler = classPool.get("com.wurmonline.server.LoginHandler");
 	            replace = "$_ = $proceed($1, $6, $3, $4, $5, $6);";
-	            Util.setReason("Use SteamID as password for accounts.");
 	            Util.instrumentDeclared(thisClass, ctLoginHandler, "reallyHandle", "login", replace);
-	            /*ctLoginHandler.getDeclaredMethod("reallyHandle").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("login")) {
-	                        m.replace("$_ = $proceed($1, $6, $3, $4, $5, $6);");
-	                        return;
-	                    }
-	                }
-	            });*/
         	}
 
         }

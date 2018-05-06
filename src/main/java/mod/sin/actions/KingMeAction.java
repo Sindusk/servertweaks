@@ -1,14 +1,5 @@
 package mod.sin.actions;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
-import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
-import org.gotti.wurmunlimited.modsupport.actions.ModAction;
-import org.gotti.wurmunlimited.modsupport.actions.ModActions;
-
 import com.wurmonline.server.behaviours.Action;
 import com.wurmonline.server.behaviours.ActionEntry;
 import com.wurmonline.server.creatures.Creature;
@@ -17,22 +8,33 @@ import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.players.Player;
+import mod.sin.servertweaks.DeveloperCommands;
+import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
+import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
+import org.gotti.wurmunlimited.modsupport.actions.ModAction;
+import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 
-public class BankBalanceAction implements ModAction {
-	private static Logger logger = Logger.getLogger(BankBalanceAction.class.getName());
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class KingMeAction implements ModAction {
+	private static Logger logger = Logger.getLogger(KingMeAction.class.getName());
 
 	private final short actionId;
 	private final ActionEntry actionEntry;
 
-	public BankBalanceAction() {
-		logger.log(Level.WARNING, "BankBalanceAction()");
+	public KingMeAction() {
+		logger.log(Level.WARNING, "KingMeAction()");
 
 		actionId = (short) ModActions.getNextActionId();
 		actionEntry = ActionEntry.createEntry(
 			actionId, 
-			"Bank Balance", 
-			"getting bank balance", 
-			new int[] { 0 }	// 6 /* ACTION_TYPE_NOMOVE */, 48 /* ACTION_TYPE_ENEMY_ALWAYS */, 36 /* ACTION_TYPE_ALWAYS_USE_ACTIVE_ITEM */
+			"King Me",
+			"kinging",
+			new int[] { 6 /* ACTION_TYPE_NOMOVE */ }	// 6 /* ACTION_TYPE_NOMOVE */, 48 /* ACTION_TYPE_ENEMY_ALWAYS */, 36 /* ACTION_TYPE_ALWAYS_USE_ACTIVE_ITEM */
 		);
 		ModActions.registerAction(actionEntry);
 	}
@@ -53,8 +55,8 @@ public class BankBalanceAction implements ModAction {
 			@Override
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
-				if(performer instanceof Player && object != null && (object.getTemplateId() == ItemList.bodyBody || object.getTemplateId() == ItemList.bodyHand)) {
-					return Arrays.asList(actionEntry);
+				if(performer instanceof Player && performer.getPower() >= DeveloperCommands.cmdKingMePower && object != null && (object.getTemplateId() == ItemList.bodyBody || object.getTemplateId() == ItemList.bodyHand)) {
+					return Collections.singletonList(actionEntry);
 				}
 				
 				return null;
@@ -76,9 +78,13 @@ public class BankBalanceAction implements ModAction {
 			@Override
 			public boolean action(Action act, Creature performer, Item target, short action, float counter)
 			{
-				long money = performer.getMoney();
-				Change change = Economy.getEconomy().getChangeFor(money);
-				performer.getCommunicator().sendNormalServerMessage("You currently have " + change.getChangeString() + " on your bank account.");
+				if(performer.getPower() < 5){
+					performer.getCommunicator().sendNormalServerMessage("You do not have permission to use this command.");
+					return true;
+				}
+				if(performer instanceof Player) {
+					DeveloperCommands.kingMe((Player) performer);
+				}
 				return true;
 			}
 			

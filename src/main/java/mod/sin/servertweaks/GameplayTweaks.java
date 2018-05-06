@@ -1,9 +1,5 @@
 package mod.sin.servertweaks;
 
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-import org.gotti.wurmunlimited.modloader.classhooks.HookException;
-import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
-
 import com.wurmonline.server.Server;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.TimeConstants;
@@ -11,7 +7,6 @@ import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.players.PlayerInfo;
 import com.wurmonline.server.players.PlayerInfoFactory;
-
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -19,6 +14,11 @@ import javassist.NotFoundException;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
 import mod.sin.lib.Util;
+import org.gotti.wurmunlimited.modloader.ReflectionUtil;
+import org.gotti.wurmunlimited.modloader.classhooks.HookException;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
+
+import java.util.Objects;
 
 public class GameplayTweaks {
     public static boolean customRarityRates = true;
@@ -40,6 +40,12 @@ public class GameplayTweaks {
     public static boolean enableTaxConfig = true;
     public static int taxGracePeriodDays = 30;
     public static double taxPercentIncreasePerDayGone = 0.03D;
+    public static boolean removeLoadUnloadStrengthRequirement = true;
+    public static boolean adjustDragonLoot = true;
+    public static float dragonLootMultiplier = 0.2f;
+    public static boolean removeConversionTimer = true;
+    public static boolean useEpicArmourValues = true;
+    public static boolean showAllCreaturesMissionRuler = true;
 
 	public static byte newGetPlayerRarity(Player p){
 		int rarity = 0;
@@ -48,10 +54,10 @@ public class GameplayTweaks {
 			int windowOfCreation = ReflectionUtil.getPrivateField(p, ReflectionUtil.getField(p.getClass(), "windowOfCreation"));
 	        if (Servers.isThisATestServer() && nextActionRarity != 0) {
 	            rarity = nextActionRarity;
-	            nextActionRarity = 0;
+	            //nextActionRarity = 0;
 	            ReflectionUtil.setPrivateField(p, ReflectionUtil.getField(p.getClass(), "nextActionRarity"), 0);
 	        } else if (windowOfCreation > 0) {
-	            windowOfCreation = 0;
+	            //windowOfCreation = 0;
 	            ReflectionUtil.setPrivateField(p, ReflectionUtil.getField(p.getClass(), "windowOfCreation"), 0);
 	            /*float faintChance = 1.0f;
 	            int supPremModifier = 0;
@@ -85,7 +91,7 @@ public class GameplayTweaks {
 		try {
         	ClassPool classPool = HookManager.getInstance().getClassPool();
         	Class<ServerTweaks> thisClass = ServerTweaks.class;
-        	String replace = "";
+        	String replace;
         	
         	if(customRarityRates){
         		// - Change rarity odds when a player obtains a rarity window - //
@@ -135,6 +141,7 @@ public class GameplayTweaks {
             if(reduceUniqueTimer){
 	            // Reduce last spawned unique timer (subtract millis to make work)
             	CtClass ctServerEntry = classPool.get("com.wurmonline.server.ServerEntry");
+            	uniqueTimerReduction *= TimeConstants.HOUR_MILLIS;
             	replace = "{"
 	            		+ "  return this.lastSpawnedUnique-"+String.valueOf(uniqueTimerReduction)+";"
 	            		+ "}";
@@ -200,10 +207,7 @@ public class GameplayTweaks {
 					@Override
 					public void edit(FieldAccess f) throws CannotCompileException {
 						if ("checkMycel".equals(f.getFieldName())) {
-							StringBuilder replacement = new StringBuilder();
-							
-							replacement.append("$_ = true;");
-							f.replace(replacement.toString());
+							f.replace("$_ = true;");
 						}
 					}
 				});
@@ -211,10 +215,7 @@ public class GameplayTweaks {
 					@Override
 					public void edit(FieldAccess f) throws CannotCompileException {
 						if ("checkMycel".equals(f.getFieldName())) {
-							StringBuilder replacement = new StringBuilder();
-							
-							replacement.append("$_ = true;");
-							f.replace(replacement.toString());
+							f.replace("$_ = true;");
 						}
 					}
 				});
@@ -307,7 +308,59 @@ public class GameplayTweaks {
 	                }
 	            });*/
 			}
-			
+
+			if(removeLoadUnloadStrengthRequirement){
+                Util.setReason("Disable strength requirement checks for load/unload.");
+                CtClass ctCargoTransportationMethods = classPool.get("com.wurmonline.server.behaviours.CargoTransportationMethods");
+                replace = "{ return true; }";
+                Util.setBodyDeclared(thisClass, ctCargoTransportationMethods, "strengthCheck", replace);
+            }
+
+            if(adjustDragonLoot){
+                Util.setReason("Adjust the amount of scale/hide to distribute after a slaying (1/5).");
+                CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+                replace = "{ return (1.0f + (float)$1.getWeightGrams() * $2)*"+String.valueOf(dragonLootMultiplier)+"f; }";
+                Util.setBodyDeclared(thisClass, ctCreature, "calculateDragonLootTotalWeight", replace);
+            }
+
+            if(removeConversionTimer){
+                Util.setReason("Remove waiting time between converting deity.");
+                CtClass ctPlayerInfo = classPool.get("com.wurmonline.server.players.PlayerInfo");
+                replace = "{ return true; }";
+                Util.setBodyDeclared(thisClass, ctPlayerInfo, "mayChangeDeity", replace);
+            }
+
+            if(useEpicArmourValues){
+                CtClass ctArmourTypes = classPool.get("com.wurmonline.server.combat.ArmourTypes");
+                Util.setReason("Use epic armor DR values.");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctArmourTypes, "getArmourBaseDR", "isChallengeOrEpicServer", replace);
+
+                Util.setReason("Use epic armor effectiveness values.");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctArmourTypes, "getArmourEffModifier", "isChallengeOrEpicServer", replace);
+
+                Util.setReason("Use epic armor material values.");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctArmourTypes, "getArmourMatBonus", "isChallengeOrEpicServer", replace);
+
+                CtClass ctArmour = classPool.get("com.wurmonline.server.combat.Armour");
+                Util.setReason("Use epic armor initialization values.");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctArmour, "initialize", "isChallengeOrEpicServer", replace);
+            }
+
+            if(showAllCreaturesMissionRuler){
+                CtClass ctMissionManager = classPool.get("com.wurmonline.server.questions.MissionManager");
+                ctMissionManager.getDeclaredMethod("dropdownCreatureTemplates").instrument(new ExprEditor() {
+                    @Override
+                    public void edit(FieldAccess fieldAccess) throws CannotCompileException {
+                        if (Objects.equals("baseCombatRating", fieldAccess.getFieldName()))
+                            fieldAccess.replace("$_ = 1.0f;");
+                    }
+                });
+            }
+
 			if(enableTaxConfig){
 				CtClass ctGuardPlan = classPool.get("com.wurmonline.server.villages.GuardPlan");
 				replace = "if(vill.getMayor().isPlayer()){"
@@ -386,7 +439,7 @@ public class GameplayTweaks {
             }
         }
         catch (NotFoundException | CannotCompileException e) {
-            throw new HookException((Throwable)e);
+            throw new HookException(e);
         }
 	}
 }

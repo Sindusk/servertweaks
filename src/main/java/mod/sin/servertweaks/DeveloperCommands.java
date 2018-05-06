@@ -24,10 +24,63 @@ import javassist.CtClass;
 import mod.sin.lib.Util;
 
 public class DeveloperCommands {
+	private static Logger logger = Logger.getLogger(DeveloperCommands.class.getName());
     public static boolean addDevCommands = true;
     public static byte cmdEventPower = 0;
     public static byte cmdUniqueSpawnPower = 5;
     public static byte cmdKingMePower = 5;
+
+    public static void kingMe(Player player){
+		byte kingdom = player.getKingdomId();
+		if(King.getKing(kingdom) == null){
+			King.createKing(player.getCurrentKingdom(), player.getName(), player.getWurmId(), player.getSex());
+			//Methods.rewardRegalia(player); //Broken because player class is frozen.
+			Item inventory = player.getInventory();
+			byte template = Kingdoms.getKingdom(kingdom).getTemplate();
+			if(template == 4){
+				template = 1;
+			}
+			try{
+				if (template == 1) {
+					Item sceptre = ItemFactory.createItem(529, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					sceptre.setAuxData(kingdom);
+					inventory.insertItem(sceptre, true);
+					Item crown = ItemFactory.createItem(530, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					crown.setAuxData(kingdom);
+					inventory.insertItem(crown, true);
+					Item robes = ItemFactory.createItem(531, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					robes.setAuxData(kingdom);
+					inventory.insertItem(robes, true);
+				} else if (template == 3) {
+					Item sceptre = ItemFactory.createItem(535, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					sceptre.setAuxData(kingdom);
+					inventory.insertItem(sceptre, true);
+					Item crown = ItemFactory.createItem(536, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					crown.setAuxData(kingdom);
+					inventory.insertItem(crown, true);
+					Item robes = ItemFactory.createItem(537, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					robes.setAuxData(kingdom);
+					inventory.insertItem(robes, true);
+				} else if (template == 2) {
+					Item sceptre = ItemFactory.createItem(532, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					sceptre.setAuxData(kingdom);
+					inventory.insertItem(sceptre, true);
+					Item crown = ItemFactory.createItem(533, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					crown.setAuxData(kingdom);
+					inventory.insertItem(crown, true);
+					Item robes = ItemFactory.createItem(534, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
+					robes.setAuxData(kingdom);
+					inventory.insertItem(robes, true);
+				}
+			} catch (Exception ex) {
+				logger.log(Level.WARNING, player.getName() + " " + ex.getMessage(), ex);
+			}
+			player.getCommunicator().sendSafeServerMessage("You are now the king of "+Kingdoms.getNameFor(kingdom)+"!");
+		}else{
+			player.getCommunicator().sendSafeServerMessage(Kingdoms.getKingdom(kingdom).getName()+" already has a king: "+King.getKing(kingdom).getFullTitle());
+		}
+	}
+
 	public static boolean customCommandHandler(ByteBuffer byteBuffer, Player player) throws UnsupportedEncodingException{
     	Logger inLog = Logger.getLogger("org.gotti.wurmunlimited.mods.servertweaks");
     	byte[] tempStringArr = new byte[byteBuffer.get() & 255];
@@ -59,54 +112,7 @@ public class DeveloperCommands {
     			Dens.checkDens(true);
     			player.getCommunicator().sendSafeServerMessage("Attempted to spawn a unique...");
     		}else if(message.startsWith("##kingme") && player.getPower() >= cmdKingMePower){
-    			byte kingdom = player.getKingdomId();
-    			if(King.getKing(kingdom) == null){
-	    			King.createKing(player.getCurrentKingdom(), player.getName(), player.getWurmId(), player.getSex());
-	    			//Methods.rewardRegalia(player); //Broken because player class is frozen.
-	    			Item inventory = player.getInventory();
-	    			byte template = Kingdoms.getKingdom(kingdom).getTemplate();
-	    			if(template == 4){
-	    				template = 1;
-	    			}
-	    			try{
-		    			if (template == 1) {
-		                    Item sceptre = ItemFactory.createItem(529, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    sceptre.setAuxData(kingdom);
-		                    inventory.insertItem(sceptre, true);
-		                    Item crown = ItemFactory.createItem(530, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    crown.setAuxData(kingdom);
-		                    inventory.insertItem(crown, true);
-		                    Item robes = ItemFactory.createItem(531, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    robes.setAuxData(kingdom);
-		                    inventory.insertItem(robes, true);
-		                } else if (template == 3) {
-		                    Item sceptre = ItemFactory.createItem(535, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    sceptre.setAuxData(kingdom);
-		                    inventory.insertItem(sceptre, true);
-		                    Item crown = ItemFactory.createItem(536, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    crown.setAuxData(kingdom);
-		                    inventory.insertItem(crown, true);
-		                    Item robes = ItemFactory.createItem(537, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    robes.setAuxData(kingdom);
-		                    inventory.insertItem(robes, true);
-		                } else if (template == 2) {
-		                    Item sceptre = ItemFactory.createItem(532, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    sceptre.setAuxData(kingdom);
-		                    inventory.insertItem(sceptre, true);
-		                    Item crown = ItemFactory.createItem(533, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    crown.setAuxData(kingdom);
-		                    inventory.insertItem(crown, true);
-		                    Item robes = ItemFactory.createItem(534, Server.rand.nextFloat() * 30.0f + 70.0f, player.getName());
-		                    robes.setAuxData(kingdom);
-		                    inventory.insertItem(robes, true);
-		                }
-    				} catch (Exception ex) {
-	                    inLog.log(Level.WARNING, player.getName() + " " + ex.getMessage(), ex);
-	                }
-	    			player.getCommunicator().sendSafeServerMessage("You are now the king of "+Kingdoms.getNameFor(kingdom)+"!");
-    			}else{
-    				player.getCommunicator().sendSafeServerMessage(Kingdoms.getKingdom(kingdom).getName()+" already has a king: "+King.getKing(kingdom).getRulerTitle());
-    			}
+    			kingMe(player);
     		}else{
     			player.getCommunicator().sendSafeServerMessage("Custom command not found: "+message);
     		}

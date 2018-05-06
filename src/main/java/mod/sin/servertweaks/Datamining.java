@@ -123,7 +123,6 @@ public class Datamining {
 			fileOut.close();
 			System.out.println("Spreadsheet complete.");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

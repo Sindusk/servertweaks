@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import mod.sin.actions.KingMeAction;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
 import org.gotti.wurmunlimited.modloader.interfaces.Initable;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
@@ -73,6 +74,16 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         GameplayTweaks.enableTaxConfig = Boolean.parseBoolean(properties.getProperty("enableTaxConfig", Boolean.toString(GameplayTweaks.enableTaxConfig)));
         GameplayTweaks.taxGracePeriodDays = Integer.parseInt(properties.getProperty("taxGracePeriodDays", String.valueOf(GameplayTweaks.taxGracePeriodDays)));
         GameplayTweaks.taxPercentIncreasePerDayGone = Double.parseDouble(properties.getProperty("taxPercentIncreasePerDayGone", String.valueOf(GameplayTweaks.taxPercentIncreasePerDayGone)));
+        BugfixTweaks.fixZombieEnchantError = Boolean.parseBoolean(properties.getProperty("fixZombieEnchantError", Boolean.toString(BugfixTweaks.fixZombieEnchantError)));
+        BugfixTweaks.fixEpicMissionNaming = Boolean.parseBoolean(properties.getProperty("fixEpicMissionNaming", Boolean.toString(BugfixTweaks.fixEpicMissionNaming)));
+        BugfixTweaks.fixSpellsWithoutEnterPermission = Boolean.parseBoolean(properties.getProperty("fixSpellsWithoutEnterPermission", Boolean.toString(BugfixTweaks.fixSpellsWithoutEnterPermission)));
+        GameplayTweaks.removeLoadUnloadStrengthRequirement = Boolean.parseBoolean(properties.getProperty("removeLoadUnloadStrengthRequirement", Boolean.toString(GameplayTweaks.removeLoadUnloadStrengthRequirement)));
+        GameplayTweaks.adjustDragonLoot = Boolean.parseBoolean(properties.getProperty("adjustDragonLoot", Boolean.toString(GameplayTweaks.adjustDragonLoot)));
+        GameplayTweaks.dragonLootMultiplier = Float.parseFloat(properties.getProperty("dragonLootMultiplier", String.valueOf(GameplayTweaks.dragonLootMultiplier)));
+        GameplayTweaks.removeConversionTimer = Boolean.parseBoolean(properties.getProperty("removeConversionTimer", Boolean.toString(GameplayTweaks.removeConversionTimer)));
+        GameplayTweaks.useEpicArmourValues = Boolean.parseBoolean(properties.getProperty("useEpicArmourValues", Boolean.toString(GameplayTweaks.useEpicArmourValues)));
+        BugfixTweaks.allowFreedomMyceliumAbsorb = Boolean.parseBoolean(properties.getProperty("allowFreedomMyceliumAbsorb", Boolean.toString(BugfixTweaks.allowFreedomMyceliumAbsorb)));
+        GameplayTweaks.showAllCreaturesMissionRuler = Boolean.parseBoolean(properties.getProperty("showAllCreaturesMissionRuler", Boolean.toString(GameplayTweaks.showAllCreaturesMissionRuler)));
         try {
             String logsPath = Paths.get("mods", new String[0]) + "/logs/";
             File newDirectory = new File(logsPath);
@@ -91,12 +102,14 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         catch (IOException ie) {
             System.err.println(String.valueOf(this.getClass().getName()) + ": Unable to add file handler to logger");
         }
+        // Developer Commands
         this.logger.info("Developer Commands: " + DeveloperCommands.addDevCommands);
         if(DeveloperCommands.addDevCommands){
         	this.logger.info("(Command) Event Power: " + DeveloperCommands.cmdEventPower);
         	this.logger.info("(Command) Unique Spawn Power: " + DeveloperCommands.cmdUniqueSpawnPower);
         	this.logger.info("(Command) King Me Power: " + DeveloperCommands.cmdKingMePower);
         }
+        // Bugfix Tweaks
         this.logger.info("Immortal Traders: " + BugfixTweaks.immortalTraders);
         this.logger.info("Immortal Bartenders: " + BugfixTweaks.immortalBartenders);
         this.logger.info("Moon Metal Vein Fix: " + BugfixTweaks.moonMetalVeinFix);
@@ -111,6 +124,11 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         this.logger.info("Disable Epic Hexmap Twitter: " + BugfixTweaks.disableEpicMapTwitter);
         this.logger.info("Remove Infidel Error: " + BugfixTweaks.removeInfidelError);
         this.logger.info("True Steam Authentication: " + BugfixTweaks.trueSteamAuthentication);
+        this.logger.info("Fix Zombie Enchant Errors: " + BugfixTweaks.fixZombieEnchantError);
+        this.logger.info("Fix Epic Mission Naming: " + BugfixTweaks.fixEpicMissionNaming);
+        this.logger.info("Fix Spells Without Enter Permission: " + BugfixTweaks.fixSpellsWithoutEnterPermission);
+        this.logger.info("Allow Freedom Mycelium Absorb: " + BugfixTweaks.allowFreedomMyceliumAbsorb);
+        // Gameplay Tweaks
         this.logger.info("Custom Rarity Rates: " + GameplayTweaks.customRarityRates);
         if(GameplayTweaks.customRarityRates){
         	this.logger.info("Fantastic Chance: " + GameplayTweaks.rarityFantasticChance+"%");
@@ -126,6 +144,12 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         logger.info("Fix Freedom Mycelium: " + GameplayTweaks.fixFreedomMycelium);
         logger.info("Enable Freedom Libila: " + GameplayTweaks.enableFreedomLibila);
         logger.info("Enable Freedom Dark Messenger: " + GameplayTweaks.enableFreedomDarkMessenger);
+        logger.info("Remove Load/Unload Strength Requirement: " + GameplayTweaks.removeLoadUnloadStrengthRequirement);
+        logger.info("Adjust Dragon Loot: " + GameplayTweaks.adjustDragonLoot);
+        logger.info("Dragon Loot Multiplier: " + GameplayTweaks.dragonLootMultiplier);
+        logger.info("Remove Conversion Timer: " + GameplayTweaks.removeConversionTimer);
+        logger.info("Use Epic Armour Values: " + GameplayTweaks.useEpicArmourValues);
+        logger.info("Show All Creatures in Mission Ruler: " + GameplayTweaks.showAllCreaturesMissionRuler);
         logger.info("Characteristic Divisor: " + GameplayTweaks.characteristicDivisor);
         logger.info("Bank Balance Action: " + enableCheckBankAction);
         logger.info("Spawn Teleport Action: " + enableSpawnTeleportAction);
@@ -151,74 +175,12 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
     
     public void init(){
     	DeveloperCommands.init();
-    	/*try{
-	        if(addDevCommands){
-		    	ClassPool classPool = HookManager.getInstance().getClassPool();
-		    	Class<ServerTweaks> thisClass = ServerTweaks.class;
-		    	classPool.appendClassPath("./mods/servertweaks/servertweaks.jar");
-		    	
-		    	CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
-		    	String replace = "java.nio.ByteBuffer tempBuffer = $1.duplicate();"
-                		+ "if(!"+ServerTweaks.class.getName()+".customCommandHandler($1, this.player)){"
-                		+ "  $_ = $proceed(tempBuffer);"
-                		+ "}";
-		    	Util.setReason("Add hook for custom dev commands.");
-		    	Util.instrumentDeclared(thisClass, ctCommunicator, "reallyHandle", "reallyHandle_CMD_MESSAGE", replace);
-	        	/*ctCommunicator.getDeclaredMethod("reallyHandle").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("reallyHandle_CMD_MESSAGE")) {
-	                        m.replace("java.nio.ByteBuffer tempBuffer = $1.duplicate();"
-	                        		+ "if(!"+ServerTweaks.class.getName()+".customCommandHandler($1, this.player)){"
-	                        		+ "  $_ = $proceed(tempBuffer);"
-	                        		+ "}");
-	                        return;
-	                    }
-	                }
-	            });*/
-	        /*}
-    	}catch(Exception e){
-    		e.printStackTrace();
-    	}*/
     }
 
     public void preInit() {
     	BugfixTweaks.preInit();
     	GameplayTweaks.preInit();
     	ModActions.init();
-    	// -- Old Attempts --
-        /*try {
-        	ClassPool classPool = HookManager.getInstance().getClassPool();
-        	Class<ServerTweaks> thisClass = ServerTweaks.class;
-        	String replace = "";
-        	
-            CtClass ctServer = classPool.get("com.wurmonline.server.Server");
-            ctServer.getDeclaredMethod("startRunning").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("createCreatureTemplates")) {
-                        m.replace("$_ = $proceed($$);"
-                        		+ "org.gotti.wurmunlimited.mods.servertweaks.Datamining.createCreatureSheet();");
-                        return;
-                    }
-                }
-            });
-            
-            // GM - Uncap the skill limit for all skills.
-            ctQuestionParser.getDeclaredMethod("parseLearnSkillQuestion").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("min")) {
-                        m.replace("if($1 == 100.0){"
-                        		+ "  $_ = $proceed(999.0D, (double)$2);"
-                        		+ "}else{"
-                        		+ "  $_ = $proceed($$);"
-                        		+ "}");
-                        return;
-                    }
-                }
-            });
-        }
-        catch (NotFoundException e) {
-            throw new HookException((Throwable)e);
-        }*/
         //Datamining.createCreatureSheet();
     }
 
@@ -230,6 +192,9 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
 		if(enableSpawnTeleportAction){
 			ModActions.registerAction(new SpawnTeleportAction(spawnTeleportName));
 		}
+		if(DeveloperCommands.addDevCommands) {
+            ModActions.registerAction(new KingMeAction());
+        }
 		//Datamining.createCreatureSheet();
 	}
 

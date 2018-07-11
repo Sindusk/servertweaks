@@ -42,6 +42,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         BugfixTweaks.immortalTraders = Boolean.parseBoolean(properties.getProperty("immortalTraders", Boolean.toString(BugfixTweaks.immortalTraders)));
         BugfixTweaks.immortalBartenders = Boolean.parseBoolean(properties.getProperty("immortalBartenders", Boolean.toString(BugfixTweaks.immortalBartenders)));
         BugfixTweaks.moonMetalVeinFix = Boolean.parseBoolean(properties.getProperty("moonMetalVeinFix", Boolean.toString(BugfixTweaks.moonMetalVeinFix)));
+        BugfixTweaks.moonMetalMinimum = Integer.parseInt(properties.getProperty("moonMetalMinimum", Integer.toString(BugfixTweaks.moonMetalMinimum)));
+        BugfixTweaks.moonMetalMaximum = Integer.parseInt(properties.getProperty("moonMetalMaximum", Integer.toString(BugfixTweaks.moonMetalMaximum)));
         BugfixTweaks.caHelpDefault = Boolean.parseBoolean(properties.getProperty("caHelpDefault", Boolean.toString(BugfixTweaks.caHelpDefault)));
         BugfixTweaks.disableChaos = Boolean.parseBoolean(properties.getProperty("disableChaos", Boolean.toString(BugfixTweaks.disableChaos)));
         GameplayTweaks.reduceUniqueTimer = Boolean.parseBoolean(properties.getProperty("reduceUniqueTimer", Boolean.toString(GameplayTweaks.reduceUniqueTimer)));
@@ -56,6 +58,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         GameplayTweaks.disableSermons = Boolean.parseBoolean(properties.getProperty("disableSermons", Boolean.toString(GameplayTweaks.disableSermons)));
         GameplayTweaks.disableFatigue = Boolean.parseBoolean(properties.getProperty("disableFatigue", Boolean.toString(GameplayTweaks.disableFatigue)));
         GameplayTweaks.gmUncapEnchants = Boolean.parseBoolean(properties.getProperty("gmUncapEnchants", Boolean.toString(GameplayTweaks.gmUncapEnchants)));
+        GameplayTweaks.gmEnchantAnyItem = Boolean.parseBoolean(properties.getProperty("gmEnchantAnyItem", Boolean.toString(GameplayTweaks.gmEnchantAnyItem)));
         GameplayTweaks.gmRemoveConditionChecks = Boolean.parseBoolean(properties.getProperty("gmRemoveConditionChecks", Boolean.toString(GameplayTweaks.gmRemoveConditionChecks)));
         BugfixTweaks.trueSteamAuthentication = Boolean.parseBoolean(properties.getProperty("trueSteamAuthentication", Boolean.toString(BugfixTweaks.trueSteamAuthentication)));
         GameplayTweaks.customRarityRates = Boolean.parseBoolean(properties.getProperty("customRarityRates", Boolean.toString(GameplayTweaks.customRarityRates)));
@@ -113,6 +116,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         this.logger.info("Immortal Traders: " + BugfixTweaks.immortalTraders);
         this.logger.info("Immortal Bartenders: " + BugfixTweaks.immortalBartenders);
         this.logger.info("Moon Metal Vein Fix: " + BugfixTweaks.moonMetalVeinFix);
+        this.logger.info("Moon Metal Minimum: " + BugfixTweaks.moonMetalMinimum);
+        this.logger.info("Moon Metal Maximum: " + BugfixTweaks.moonMetalMaximum);
         this.logger.info("CA Help Default: " + BugfixTweaks.caHelpDefault);
         this.logger.info("Disable Chaos: " + BugfixTweaks.disableChaos);
         this.logger.info("Reduce Unique Timer: " + GameplayTweaks.reduceUniqueTimer);
@@ -141,6 +146,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         this.logger.info("Disable Fatigue: " + GameplayTweaks.disableFatigue);
         this.logger.info("GM - Uncap Enchants: " + GameplayTweaks.gmUncapEnchants);
         this.logger.info("GM - Remove Condition Checks: " + GameplayTweaks.gmRemoveConditionChecks);
+        this.logger.info("GM - Enchant Any Item: " + GameplayTweaks.gmEnchantAnyItem);
         logger.info("Fix Freedom Mycelium: " + GameplayTweaks.fixFreedomMycelium);
         logger.info("Enable Freedom Libila: " + GameplayTweaks.enableFreedomLibila);
         logger.info("Enable Freedom Dark Messenger: " + GameplayTweaks.enableFreedomDarkMessenger);

@@ -11,6 +11,7 @@ import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import javassist.bytecode.Descriptor;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
 import mod.sin.lib.Util;
@@ -33,6 +34,7 @@ public class GameplayTweaks {
     public static boolean disableFatigue = true;
     public static boolean gmUncapEnchants = true;
     public static boolean gmRemoveConditionChecks = true;
+    public static boolean gmEnchantAnyItem = true;
     public static boolean fixFreedomMycelium = true;
     public static boolean enableFreedomLibila = true;
     public static boolean enableFreedomDarkMessenger = true;
@@ -437,6 +439,36 @@ public class GameplayTweaks {
 	                }
 	            });*/
             }
+
+            if(gmEnchantAnyItem){
+                Util.setReason("Allow GM's to enchant items regardless of whether the game thinks they can be enchanted.");
+                CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
+                CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+                CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
+                CtClass ctList = classPool.get("java.util.List");
+                CtClass[] params1 = {
+                        ctCreature,
+                        ctItem,
+                        ctItem
+                };
+                String desc1 = Descriptor.ofMethod(ctList, params1);
+                replace = "$_ = true;";
+                Util.instrumentDescribed(thisClass, ctItemBehaviour, "getBehavioursFor", desc1, "mayBeEnchanted", replace);
+
+                Util.setReason("Allow GM's to enchant items regardless of whether the game thinks they can be enchanted.");
+                CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
+                CtClass[] params2 = {
+                        ctAction,
+                        ctCreature,
+                        ctItem,
+                        ctItem,
+                        CtClass.shortType,
+                        CtClass.floatType
+                };
+                String desc2 = Descriptor.ofMethod(CtClass.booleanType, params2);
+                replace = "$_ = true;";
+                Util.instrumentDescribed(thisClass, ctItemBehaviour, "action", desc2, "mayBeEnchanted", replace);
+			}
         }
         catch (NotFoundException | CannotCompileException e) {
             throw new HookException(e);

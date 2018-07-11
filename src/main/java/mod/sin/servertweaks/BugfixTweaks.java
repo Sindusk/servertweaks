@@ -13,6 +13,8 @@ public class BugfixTweaks {
     public static boolean immortalTraders = true;
     public static boolean immortalBartenders = true;
     public static boolean moonMetalVeinFix = true;
+    public static int moonMetalMinimum = 500;
+    public static int moonMetalMaximum = 1000;
     public static boolean caHelpDefault = true;
     public static boolean disableChaos = true;
     public static boolean logUniques = true;
@@ -78,8 +80,8 @@ public class BugfixTweaks {
                 		+ "if (resource == 65535) {"
                 		+ "  resource = com.wurmonline.server.Server.rand.nextInt(10000);"
                 		+ "}"
-                		+ "if (resource > 1000 && (itemTemplateCreated == 693 || itemTemplateCreated == 697)) {"
-                		+ "  resource = com.wurmonline.server.Server.rand.nextInt(1000);"
+                		+ "if (resource > "+String.valueOf(moonMetalMaximum)+" && (itemTemplateCreated == 693 || itemTemplateCreated == 697)) {"
+                		+ "  resource = "+String.valueOf(moonMetalMinimum)+"+com.wurmonline.server.Server.rand.nextInt("+String.valueOf(Math.max(1,moonMetalMaximum-moonMetalMinimum))+");"
                 		+ "}"
                 		+ "$_ = $proceed($$);";
             	Util.instrumentDescribed(thisClass, ctCaveWallBehaviour, "action", desc6, "getDifficultyForTile", replace);

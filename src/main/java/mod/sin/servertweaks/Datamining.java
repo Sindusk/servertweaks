@@ -82,7 +82,7 @@ public class Datamining {
 					bonusCombatRating.put(names.get(i), 0F);
 				}*/
 				row.createCell(11).setCellValue(ct.getBaseCombatRating()+ct.getBonusCombatRating());
-				row.createCell(12).setCellValue(ct.getArmourType());
+				row.createCell(12).setCellValue(ct.getArmourType().getName());
 				
 				Skills skills = ct.getSkills();
 				row.createCell(13).setCellValue(skills.getSkillOrLearn(SkillList.WEAPONLESS_FIGHTING).getKnowledge());

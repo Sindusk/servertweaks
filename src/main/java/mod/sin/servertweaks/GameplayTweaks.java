@@ -46,7 +46,6 @@ public class GameplayTweaks {
     public static boolean adjustDragonLoot = true;
     public static float dragonLootMultiplier = 0.2f;
     public static boolean removeConversionTimer = true;
-    public static boolean useEpicArmourValues = true;
     public static boolean showAllCreaturesMissionRuler = true;
 
 	public static byte newGetPlayerRarity(Player p){
@@ -330,26 +329,6 @@ public class GameplayTweaks {
                 CtClass ctPlayerInfo = classPool.get("com.wurmonline.server.players.PlayerInfo");
                 replace = "{ return true; }";
                 Util.setBodyDeclared(thisClass, ctPlayerInfo, "mayChangeDeity", replace);
-            }
-
-            if(useEpicArmourValues){
-                CtClass ctArmourTypes = classPool.get("com.wurmonline.server.combat.ArmourTypes");
-                Util.setReason("Use epic armor DR values.");
-                replace = "$_ = true;";
-                Util.instrumentDeclared(thisClass, ctArmourTypes, "getArmourBaseDR", "isChallengeOrEpicServer", replace);
-
-                Util.setReason("Use epic armor effectiveness values.");
-                replace = "$_ = true;";
-                Util.instrumentDeclared(thisClass, ctArmourTypes, "getArmourEffModifier", "isChallengeOrEpicServer", replace);
-
-                Util.setReason("Use epic armor material values.");
-                replace = "$_ = true;";
-                Util.instrumentDeclared(thisClass, ctArmourTypes, "getArmourMatBonus", "isChallengeOrEpicServer", replace);
-
-                CtClass ctArmour = classPool.get("com.wurmonline.server.combat.Armour");
-                Util.setReason("Use epic armor initialization values.");
-                replace = "$_ = true;";
-                Util.instrumentDeclared(thisClass, ctArmour, "initialize", "isChallengeOrEpicServer", replace);
             }
 
             if(showAllCreaturesMissionRuler){

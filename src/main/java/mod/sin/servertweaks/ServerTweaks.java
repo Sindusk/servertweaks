@@ -84,7 +84,6 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         GameplayTweaks.adjustDragonLoot = Boolean.parseBoolean(properties.getProperty("adjustDragonLoot", Boolean.toString(GameplayTweaks.adjustDragonLoot)));
         GameplayTweaks.dragonLootMultiplier = Float.parseFloat(properties.getProperty("dragonLootMultiplier", String.valueOf(GameplayTweaks.dragonLootMultiplier)));
         GameplayTweaks.removeConversionTimer = Boolean.parseBoolean(properties.getProperty("removeConversionTimer", Boolean.toString(GameplayTweaks.removeConversionTimer)));
-        GameplayTweaks.useEpicArmourValues = Boolean.parseBoolean(properties.getProperty("useEpicArmourValues", Boolean.toString(GameplayTweaks.useEpicArmourValues)));
         BugfixTweaks.allowFreedomMyceliumAbsorb = Boolean.parseBoolean(properties.getProperty("allowFreedomMyceliumAbsorb", Boolean.toString(BugfixTweaks.allowFreedomMyceliumAbsorb)));
         GameplayTweaks.showAllCreaturesMissionRuler = Boolean.parseBoolean(properties.getProperty("showAllCreaturesMissionRuler", Boolean.toString(GameplayTweaks.showAllCreaturesMissionRuler)));
         try {
@@ -154,7 +153,6 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         logger.info("Adjust Dragon Loot: " + GameplayTweaks.adjustDragonLoot);
         logger.info("Dragon Loot Multiplier: " + GameplayTweaks.dragonLootMultiplier);
         logger.info("Remove Conversion Timer: " + GameplayTweaks.removeConversionTimer);
-        logger.info("Use Epic Armour Values: " + GameplayTweaks.useEpicArmourValues);
         logger.info("Show All Creatures in Mission Ruler: " + GameplayTweaks.showAllCreaturesMissionRuler);
         logger.info("Characteristic Divisor: " + GameplayTweaks.characteristicDivisor);
         logger.info("Bank Balance Action: " + enableCheckBankAction);

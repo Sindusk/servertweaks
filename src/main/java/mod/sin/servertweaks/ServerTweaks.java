@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import mod.sin.actions.KingMeAction;
+import mod.sin.lib.Prop;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
 import org.gotti.wurmunlimited.modloader.interfaces.Initable;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
@@ -34,6 +35,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
     }
 
     public void configure(Properties properties) {
+        Prop.properties = properties;
+
         this.bDebug = Boolean.parseBoolean(properties.getProperty("debug", Boolean.toString(this.bDebug)));
         DeveloperCommands.addDevCommands = Boolean.parseBoolean(properties.getProperty("addDevCommands", Boolean.toString(DeveloperCommands.addDevCommands)));
         DeveloperCommands.cmdEventPower = Byte.parseByte(properties.getProperty("cmdEventPower", String.valueOf(DeveloperCommands.cmdEventPower)));
@@ -54,6 +57,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         BugfixTweaks.buildOnHolyGround = Boolean.parseBoolean(properties.getProperty("buildOnHolyGround", Boolean.toString(BugfixTweaks.buildOnHolyGround)));
         BugfixTweaks.disableEpicMapTwitter = Boolean.parseBoolean(properties.getProperty("disableEpicMapTwitter", Boolean.toString(BugfixTweaks.disableEpicMapTwitter)));
         BugfixTweaks.removeInfidelError = Boolean.parseBoolean(properties.getProperty("removeInfidelError", Boolean.toString(BugfixTweaks.removeInfidelError)));
+        GameplayTweaks.editEpicCurve = Prop.getBooleanProperty("editEpicCurve", GameplayTweaks.editEpicCurve);
+        GameplayTweaks.epicCurveMultiplier = Prop.getFloatProperty("epicCurveMultiplier", GameplayTweaks.epicCurveMultiplier);
         GameplayTweaks.noDragonLeeching = Boolean.parseBoolean(properties.getProperty("noDragonLeeching", Boolean.toString(GameplayTweaks.noDragonLeeching)));
         GameplayTweaks.disableSermons = Boolean.parseBoolean(properties.getProperty("disableSermons", Boolean.toString(GameplayTweaks.disableSermons)));
         GameplayTweaks.disableFatigue = Boolean.parseBoolean(properties.getProperty("disableFatigue", Boolean.toString(GameplayTweaks.disableFatigue)));
@@ -133,6 +138,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         this.logger.info("Fix Spells Without Enter Permission: " + BugfixTweaks.fixSpellsWithoutEnterPermission);
         this.logger.info("Allow Freedom Mycelium Absorb: " + BugfixTweaks.allowFreedomMyceliumAbsorb);
         // Gameplay Tweaks
+        this.logger.info("Edit Epic Curve: " + GameplayTweaks.editEpicCurve);
+        this.logger.info("Epic Curve Multiplier: " + GameplayTweaks.epicCurveMultiplier);
         this.logger.info("Custom Rarity Rates: " + GameplayTweaks.customRarityRates);
         if(GameplayTweaks.customRarityRates){
         	this.logger.info("Fantastic Chance: " + GameplayTweaks.rarityFantasticChance+"%");

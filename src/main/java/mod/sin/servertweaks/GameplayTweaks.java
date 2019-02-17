@@ -22,6 +22,8 @@ import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import java.util.Objects;
 
 public class GameplayTweaks {
+	public static boolean editEpicCurve = false;
+	public static float epicCurveMultiplier = 1.0f;
     public static boolean customRarityRates = true;
     public static float rarityFantasticChance = 0.1f;
     public static float raritySupremeChance = 8.0f;
@@ -93,6 +95,20 @@ public class GameplayTweaks {
         	ClassPool classPool = HookManager.getInstance().getClassPool();
         	Class<ServerTweaks> thisClass = ServerTweaks.class;
         	String replace;
+
+        	if(editEpicCurve){
+        		// - Edit the effects of the epic curve from a server. - //
+				CtClass ctSkill = classPool.get("com.wurmonline.server.skills.Skill");
+				// Ensure the value is within the proper bounds
+				epicCurveMultiplier = Math.min(1f, Math.max(0f, epicCurveMultiplier));
+				replace = "$_ = $1 + (($proceed($$) - $1) * "+String.valueOf(epicCurveMultiplier)+");";
+				Util.setReason("Edit the effect of the Epic Curve");
+				CtClass[] params = {
+						CtClass.doubleType
+				};
+				String desc = Descriptor.ofMethod(CtClass.doubleType, params);
+				Util.instrumentDescribed(thisClass, ctSkill, "getKnowledge", desc, "getModifiedPercentageEffect", replace);
+			}
         	
         	if(customRarityRates){
         		// - Change rarity odds when a player obtains a rarity window - //
@@ -107,16 +123,6 @@ public class GameplayTweaks {
         		replace = "if(skillType == 0){ $5 = "+characteristicDivisor+";}$proceed($$);";
         		Util.setReason("Set new characteristic divisor.");
         		Util.instrumentDeclared(thisClass, ctSkill, "checkAdvance", "doSkillGainNew", replace);
-                /*ctSkill.getDeclaredMethod("checkAdvance").instrument(new ExprEditor(){
-
-                    public void edit(MethodCall m) throws CannotCompileException {
-                        if (m.getClassName().equals("com.wurmonline.server.skills.Skill") && m.getMethodName().equals("doSkillGainNew")) {
-                            m.replace("if(skillType == 0){ $5 = "+SkillGainControl.this.characteristicDivider+";}$proceed($$);");
-                            SkillGainControl.this.Debug("Replaced doSkillGainNew.");
-                            return;
-                        }
-                    }
-                });*/
         	}
         	
         	if(itemBasedFoodAffinities){
@@ -171,10 +177,6 @@ public class GameplayTweaks {
 	            		+ "}";
 	            Util.setReason("Disable sermons for the server.");
 	            Util.setBodyDeclared(thisClass, ctMethodsReligion, "holdSermon", replace);
-	            /*ctMethodsReligion.getDeclaredMethod("holdSermon").setBody("{"
-	            		+ "  $1.getCommunicator().sendNormalServerMessage(\"You may not hold a sermon in this world.\");"
-	            		+ "  return true;"
-	            		+ "}");*/
             }
 
             if(disableFatigue){
@@ -196,14 +198,6 @@ public class GameplayTweaks {
 	            replace = "$_ = true;";
 	            Util.setReason("Fix mycelium spread on Freedom servers.");
 	            Util.instrumentDeclared(thisClass, ctTilePoller, "checkEffects", "isThisAPvpServer", replace);
-	            /*ctTilePoller.getDeclaredMethod("checkEffects").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("isThisAPvpServer")) {
-	                        m.replace("$_ = true;");
-	                        return;
-	                    }
-	                }
-	            });*/
 				ctTilePoller.getDeclaredMethod("checkForGrassSpread").instrument(new ExprEditor() {
 					@Override
 					public void edit(FieldAccess f) throws CannotCompileException {
@@ -229,58 +223,21 @@ public class GameplayTweaks {
 	            // [3/29/18] Disabled - Not Working, but doesn't appear to be having any effect anyway.
 	            /*Util.setReason("Disable conversion to HotS when becoming Libila.");
 	            Util.instrumentDeclared(thisClass, ctQuestionParser, "parseAltarConvertQuestion", "getKingdomTemplateId", replace);*/
-	            /*ctQuestionParser.getDeclaredMethod("parseAltarConvertQuestion").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("setKingdomId")) {
-	                        m.replace("$_ = $proceed((byte)4);");
-	                        return;
-	                    }
-	                }
-	            });*/
+
 	            Util.setReason("Disable conversion to HotS when becoming Libila.");
 	            Util.instrumentDeclared(thisClass, ctQuestionParser, "parseSetDeityQuestion", "setKingdomId", replace);
-	            /*ctQuestionParser.getDeclaredMethod("parseSetDeityQuestion").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("setKingdomId")) {
-	                        m.replace("$_ = $proceed((byte)4);");
-	                        return;
-	                    }
-	                }
-	            });*/
 	            
 	            // Allow use of the Bone Altar as a Freedom member
 	            CtClass ctAltar = classPool.get("com.wurmonline.server.questions.AltarConversionQuestion");
 	            replace = "$_ = true;";
 	            Util.setReason("Allow use of Bone Altar conversion to Libila for Freedom.");
 	            Util.instrumentDeclared(thisClass, ctAltar, "sendQuestion", "doesKingdomTemplateAcceptDeity", replace);
-	            /*ctAltar.getDeclaredMethod("sendQuestion").instrument(new ExprEditor() {
-	            	public void edit(MethodCall m) throws CannotCompileException {
-	            		if (m.getMethodName().equals("doesKingdomTemplateAcceptDeity")) {
-	            			m.replace("$_ = true;");
-	            			return;
-	            		}
-	            	}
-	            });*/
+
 	            Util.setReason("Allow use of Bone Altar conversion to Libila for Freedom.");
 	            Util.instrumentDeclared(thisClass, ctQuestionParser, "parseAltarConvertQuestion", "doesKingdomTemplateAcceptDeity", replace);
-	            /*ctQuestionParser.getDeclaredMethod("parseAltarConvertQuestion").instrument(new ExprEditor() {
-	            	public void edit(MethodCall m) throws CannotCompileException {
-	            		if (m.getMethodName().equals("doesKingdomTemplateAcceptDeity")) {
-	            			m.replace("$_ = true;");
-	            			return;
-	            		}
-	            	}
-	            });*/
+
 	            Util.setReason("Allow use of Bone Altar conversion to Libila for Freedom.");
 	            Util.instrumentDeclared(thisClass, ctQuestionParser, "parseConvertQuestion", "doesKingdomTemplateAcceptDeity", replace);
-	            /*ctQuestionParser.getDeclaredMethod("parseConvertQuestion").instrument(new ExprEditor() {
-	            	public void edit(MethodCall m) throws CannotCompileException {
-	            		if (m.getMethodName().equals("doesKingdomTemplateAcceptDeity")) {
-	            			m.replace("$_ = true;");
-	            			return;
-	            		}
-	            	}
-	            });*/
 			}
 			
             
@@ -290,24 +247,8 @@ public class GameplayTweaks {
 	            replace = "$_ = true;";
 	            Util.setReason("Enable Dark Messenger for non-Libila players.");
 	            Util.instrumentDeclared(thisClass, ctWurmMailSender, "checkForWurmMail", "hasCourier", replace);
-	            /*ctWurmMailSender.getDeclaredMethod("checkForWurmMail").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getClassName().equals("com.wurmonline.server.items.Item") && m.getMethodName().equals("hasCourier")) {
-	                        m.replace("$_ = true;");
-	                        return;
-	                    }
-	                }
-	            });*/
 	            Util.setReason("Enable Dark Messenger for non-Libila players.");
 	            Util.instrumentDeclared(thisClass, ctWurmMailSender, "sendWurmMail", "hasCourier", replace);
-	            /*ctWurmMailSender.getDeclaredMethod("sendWurmMail").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getClassName().equals("com.wurmonline.server.items.Item") && m.getMethodName().equals("hasCourier")) {
-	                        m.replace("$_ = true;");
-	                        return;
-	                    }
-	                }
-	            });*/
 			}
 
 			if(removeLoadUnloadStrengthRequirement){
@@ -357,50 +298,14 @@ public class GameplayTweaks {
                 		+ "$proceed($$);";
 				Util.setReason("Tax deeds based on duration the mayor logged out.");
 				Util.instrumentDeclared(thisClass, ctGuardPlan, "getMonthlyCost", "max", replace);
-	            /*ctGuardPlan.getDeclaredMethod("getMonthlyCost").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getClassName().equals("java.lang.Math") && m.getMethodName().equals("max")) {
-	                        m.replace(""
-	                        		//+ "logger.log(java.util.logging.Level.INFO, vill.getName()+\" - Previous Cost: \"+String.valueOf(cost));"
-	                        		+ "if(vill.getMayor().isPlayer()){"
-	                        		+ "  long lastLogout = com.wurmonline.server.Players.getInstance().getLastLogoutForPlayer(vill.getMayor().getId());"
-	                        		//+ "  logger.log(java.util.logging.Level.INFO, vill.getName()+\" - Last Logout: \"+String.valueOf(lastLogout));"
-	                        		+ "  long delta = System.currentTimeMillis() - lastLogout;"
-	                        		+ "  long gracePeriod = "+String.valueOf(TimeConstants.DAY_MILLIS*taxGracePeriodDays)+";"
-	                               	//+ "  logger.log(java.util.logging.Level.INFO, vill.getName()+\" - Delta: \"+String.valueOf(delta));"
-	                        		+ "  if(delta > gracePeriod){"
-	                        		+ "    long daysGone = delta / "+TimeConstants.DAY_MILLIS+";"
-	                               	//+ "    logger.log(java.util.logging.Level.INFO, vill.getName()+\" - Days Gone: \"+String.valueOf(daysGone));"
-	                        		+ "    cost = (long)((double)cost * (1+((double)daysGone * (double)"+String.valueOf(taxPercentIncreasePerDayGone)+")));"
-	                        		+ "  }"
-	                        		//+ "  logger.log(java.util.logging.Level.INFO, vill.getName()+\" - New Cost: \"+String.valueOf(cost));"
-	                        		+ "}"
-	                        		+ "$_ = java.lang.Math.max(cost, com.wurmonline.server.villages.Villages.MINIMUM_UPKEEP);"
-	                        		+ "$proceed($$);"
-	                        	//alt	+ "$_ = $proceed(cost, cost);"
-	                        		//+ "$_ = $proceed($$);"
-	                        		//+ "return java.lang.Math.max(cost, com.wurmonline.server.villages.Villages.MINIMUM_UPKEEP);"
-	                        		+ "");
-	                        return;
-	                    }
-	                }
-	            });*/
 			}
             
             if(gmUncapEnchants){
 	            // GM - Uncap the possible enchant value.
 	            CtClass ctGmSetEnchants = classPool.get("com.wurmonline.server.questions.GmSetEnchants");
-	            replace = "$_ = $proceed($1, 999);";
+	            replace = "$_ = $proceed($1, 99999);";
 	            Util.setReason("Allow GM's to apply any enchant power.");
 	            Util.instrumentDeclared(thisClass, ctGmSetEnchants, "answer", "min", replace);
-	            /*ctGmSetEnchants.getDeclaredMethod("answer").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("min")) {
-	                        m.replace("$_ = $proceed($1, 999);");
-	                        return;
-	                    }
-	                }
-	            });*/
             }
             
             if(gmRemoveConditionChecks){
@@ -409,14 +314,6 @@ public class GameplayTweaks {
 	            replace = "$_ = true;";
 	            Util.setReason("Allow GM's to spawn conditioned animals even if the animal has no den template.");
 	            Util.instrumentDeclared(thisClass, ctQuestionParser, "parseCreatureCreationQuestion", "hasDen", replace);
-	            /*ctQuestionParser.getDeclaredMethod("parseCreatureCreationQuestion").instrument(new ExprEditor(){
-	                public void edit(MethodCall m) throws CannotCompileException {
-	                    if (m.getMethodName().equals("hasDen")) {
-	                        m.replace("$_ = true;");
-	                        return;
-	                    }
-	                }
-	            });*/
             }
 
             if(gmEnchantAnyItem){

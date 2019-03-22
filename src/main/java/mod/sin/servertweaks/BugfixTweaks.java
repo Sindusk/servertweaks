@@ -22,7 +22,6 @@ public class BugfixTweaks {
     public static boolean unlockTreasureChests = true;
     public static boolean buildOnHolyGround = true;
     public static boolean disableEpicMapTwitter = true;
-    public static boolean removeInfidelError = true;
     public static boolean trueSteamAuthentication = true;
     public static boolean fixZombieEnchantError = true;
     public static boolean fixEpicMissionNaming = true;
@@ -240,6 +239,7 @@ public class BugfixTweaks {
 	            //ctEpicEntity.getDeclaredMethod("broadCastWithName").setBody("{}");
             }
             
+            /* Removed for Wurm Unlimited 1.9 - Implemented into the base game.
             if(removeInfidelError){
 	            // Remove infidel error
 				Util.setReason("Remove infidel error [Creature Enchantment].");
@@ -261,7 +261,7 @@ public class BugfixTweaks {
 				CtClass ctRefresh = classPool.get("com.wurmonline.server.spells.Refresh");
 				replace = "$_ = true;";
 				Util.instrumentDeclared(thisClass, ctRefresh, "precondition", "accepts", replace);
-            }
+            }*/
 
             if(fixZombieEnchantError){
 				Util.setReason("Remove spam from creature enchantments on zombies.");

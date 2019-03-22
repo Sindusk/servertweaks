@@ -56,7 +56,6 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         BugfixTweaks.unlockTreasureChests = Boolean.parseBoolean(properties.getProperty("unlockTreasureChests", Boolean.toString(BugfixTweaks.unlockTreasureChests)));
         BugfixTweaks.buildOnHolyGround = Boolean.parseBoolean(properties.getProperty("buildOnHolyGround", Boolean.toString(BugfixTweaks.buildOnHolyGround)));
         BugfixTweaks.disableEpicMapTwitter = Boolean.parseBoolean(properties.getProperty("disableEpicMapTwitter", Boolean.toString(BugfixTweaks.disableEpicMapTwitter)));
-        BugfixTweaks.removeInfidelError = Boolean.parseBoolean(properties.getProperty("removeInfidelError", Boolean.toString(BugfixTweaks.removeInfidelError)));
         GameplayTweaks.editEpicCurve = Prop.getBooleanProperty("editEpicCurve", GameplayTweaks.editEpicCurve);
         GameplayTweaks.epicCurveMultiplier = Prop.getFloatProperty("epicCurveMultiplier", GameplayTweaks.epicCurveMultiplier);
         GameplayTweaks.noDragonLeeching = Boolean.parseBoolean(properties.getProperty("noDragonLeeching", Boolean.toString(GameplayTweaks.noDragonLeeching)));
@@ -131,7 +130,6 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         this.logger.info("Unlock Treasure Chests: " + BugfixTweaks.unlockTreasureChests);
         this.logger.info("Build On Holy Ground: " + BugfixTweaks.buildOnHolyGround);
         this.logger.info("Disable Epic Hexmap Twitter: " + BugfixTweaks.disableEpicMapTwitter);
-        this.logger.info("Remove Infidel Error: " + BugfixTweaks.removeInfidelError);
         this.logger.info("True Steam Authentication: " + BugfixTweaks.trueSteamAuthentication);
         this.logger.info("Fix Zombie Enchant Errors: " + BugfixTweaks.fixZombieEnchantError);
         this.logger.info("Fix Epic Mission Naming: " + BugfixTweaks.fixEpicMissionNaming);

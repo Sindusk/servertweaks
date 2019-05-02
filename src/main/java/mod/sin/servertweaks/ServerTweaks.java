@@ -28,16 +28,11 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
     public static boolean enableSpawnTeleportAction = true;
     public static String spawnTeleportName = "Spawn Teleport";
     public static int spawnTeleportTimer = 1200;
-    private Logger logger;
-
-    public ServerTweaks() {
-        this.logger = Logger.getLogger(this.getClass().getName());
-    }
+    private Logger logger = Logger.getLogger(ServerTweaks.class.getName());
 
     public void configure(Properties properties) {
         Prop.properties = properties;
 
-        this.bDebug = Boolean.parseBoolean(properties.getProperty("debug", Boolean.toString(this.bDebug)));
         DeveloperCommands.addDevCommands = Boolean.parseBoolean(properties.getProperty("addDevCommands", Boolean.toString(DeveloperCommands.addDevCommands)));
         DeveloperCommands.cmdEventPower = Byte.parseByte(properties.getProperty("cmdEventPower", String.valueOf(DeveloperCommands.cmdEventPower)));
         DeveloperCommands.cmdUniqueSpawnPower = Byte.parseByte(properties.getProperty("cmdUniqueSpawnPower", String.valueOf(DeveloperCommands.cmdUniqueSpawnPower)));
@@ -90,24 +85,12 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         GameplayTweaks.removeConversionTimer = Boolean.parseBoolean(properties.getProperty("removeConversionTimer", Boolean.toString(GameplayTweaks.removeConversionTimer)));
         BugfixTweaks.allowFreedomMyceliumAbsorb = Boolean.parseBoolean(properties.getProperty("allowFreedomMyceliumAbsorb", Boolean.toString(BugfixTweaks.allowFreedomMyceliumAbsorb)));
         GameplayTweaks.showAllCreaturesMissionRuler = Boolean.parseBoolean(properties.getProperty("showAllCreaturesMissionRuler", Boolean.toString(GameplayTweaks.showAllCreaturesMissionRuler)));
-        try {
-            String logsPath = Paths.get("mods", new String[0]) + "/logs/";
-            File newDirectory = new File(logsPath);
-            if (!newDirectory.exists()) {
-                newDirectory.mkdirs();
-            }
-            FileHandler fh = new FileHandler(String.valueOf(String.valueOf(logsPath)) + this.getClass().getSimpleName() + ".log", 10240000, 200, true);
-            if (this.bDebug) {
-                fh.setLevel(Level.INFO);
-            } else {
-                fh.setLevel(Level.WARNING);
-            }
-            fh.setFormatter(new SimpleFormatter());
-            this.logger.addHandler(fh);
-        }
-        catch (IOException ie) {
-            System.err.println(String.valueOf(this.getClass().getName()) + ": Unable to add file handler to logger");
-        }
+        GameplayTweaks.enableFatigueSkillGainMultiplier = Prop.getBooleanProperty("enableFatigueSkillGainMultiplier", GameplayTweaks.enableFatigueSkillGainMultiplier);
+        GameplayTweaks.fatigueMaximumMultiplier = Prop.getFloatProperty("fatigueMaximumMultiplier", GameplayTweaks.fatigueMaximumMultiplier);
+        GameplayTweaks.fatigueMinimumMultiplier = Prop.getFloatProperty("fatigueMinimumMultiplier", GameplayTweaks.fatigueMinimumMultiplier);
+        GameplayTweaks.fatigueMaximumThreshold = Prop.getIntegerProperty("fatigueMaximumThreshold", GameplayTweaks.fatigueMaximumThreshold);
+        GameplayTweaks.fatigueMinimumThreshold = Prop.getIntegerProperty("fatigueMinimumThreshold", GameplayTweaks.fatigueMinimumThreshold);
+
         // Developer Commands
         this.logger.info("Developer Commands: " + DeveloperCommands.addDevCommands);
         if(DeveloperCommands.addDevCommands){
@@ -171,14 +154,12 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedList
         	logger.info("Tax Grace Period (Days): " + GameplayTweaks.taxGracePeriodDays);
         	logger.info("Tax Percent Increase Per Day Gone: " + GameplayTweaks.taxPercentIncreasePerDayGone);
         }
-        this.Debug("Debugging messages are enabled.");
-    }
-
-    private void Debug(String x) {
-        if (this.bDebug) {
-            System.out.println(String.valueOf(this.getClass().getSimpleName()) + ": " + x);
-            System.out.flush();
-            this.logger.log(Level.INFO, x);
+        logger.info("Enable Fatigue Skill Gain Multiplier: "+GameplayTweaks.enableFatigueSkillGainMultiplier);
+        if(GameplayTweaks.enableFatigueSkillGainMultiplier){
+            logger.info("Fatigue Maximum Skill Gain Multiplier: "+GameplayTweaks.fatigueMaximumMultiplier);
+            logger.info("Fatigue Minimum Skill Gain Multiplier: "+GameplayTweaks.fatigueMinimumMultiplier);
+            logger.info("Fatigue Maximum Threshold: "+GameplayTweaks.fatigueMaximumThreshold);
+            logger.info("Fatigue Minimum Threshold: "+GameplayTweaks.fatigueMinimumThreshold);
         }
     }
     

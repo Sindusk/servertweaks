@@ -1,12 +1,11 @@
 package mod.sin.servertweaks;
 
-import com.wurmonline.server.Server;
-import com.wurmonline.server.Servers;
-import com.wurmonline.server.TimeConstants;
+import com.wurmonline.server.*;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.players.PlayerInfo;
 import com.wurmonline.server.players.PlayerInfoFactory;
+import com.wurmonline.server.skills.Skill;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -20,8 +19,11 @@ import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 public class GameplayTweaks {
+    private static Logger logger = Logger.getLogger(GameplayTweaks.class.getName());
+
 	public static boolean editEpicCurve = false;
 	public static float epicCurveMultiplier = 1.0f;
     public static boolean customRarityRates = true;
@@ -49,6 +51,11 @@ public class GameplayTweaks {
     public static float dragonLootMultiplier = 0.2f;
     public static boolean removeConversionTimer = true;
     public static boolean showAllCreaturesMissionRuler = true;
+    public static boolean enableFatigueSkillGainMultiplier = true;
+    public static float fatigueMaximumMultiplier = 1.0f;
+    public static float fatigueMinimumMultiplier = 0.2f;
+    public static int fatigueMaximumThreshold = 39600; // Default is 39600 seconds, or 11 hours.
+    public static int fatigueMinimumThreshold = 21600; // Default is 21600 seconds, or 6 hours.
 
 	public static byte newGetPlayerRarity(Player p){
 		int rarity = 0;
@@ -89,6 +96,31 @@ public class GameplayTweaks {
 		}
 		return 0;
 	}
+
+    /**
+     * Grants a multiplier to skill gain based on Fatigue.
+     * Fatigue maximum: 43200 (seconds, equates to 12 hours).
+     * Fatigue minimum: 0
+     * @param player the player having skill gain calculated
+     * @return a multiplier for skill gain
+     */
+	public static double getFatigueSkillMultiplier(Player player){
+	    double mult;
+        int fatigueLeft = player.getFatigueLeft();
+        if (fatigueLeft <= fatigueMinimumThreshold){
+            // The player has lower than the minimum threshold, so they have minimum skill gain.
+            return (double) fatigueMinimumMultiplier;
+        }else if (fatigueLeft >= fatigueMaximumThreshold){
+            // The player has more than the maximum threshold, so they have maximum skill gain.
+            return (double) fatigueMaximumMultiplier;
+        }else{
+            // They have some amount between, so do some math.
+            double thresholdDifference = fatigueMaximumThreshold - fatigueMinimumThreshold; // Difference between the thresholds
+            double difference = fatigueLeft - fatigueMinimumThreshold; // Amount between the two.
+            mult = difference / Math.max(1, thresholdDifference); // Percentage between the threshholds
+        }
+        return mult;
+    }
 
 	public static void preInit(){
 		try {
@@ -345,6 +377,22 @@ public class GameplayTweaks {
                 replace = "$_ = true;";
                 Util.instrumentDescribed(thisClass, ctItemBehaviour, "action", desc2, "mayBeEnchanted", replace);
 			}
+
+			if(enableFatigueSkillGainMultiplier){
+                CtClass ctSkill = classPool.get("com.wurmonline.server.skills.Skill");
+                CtClass[] params3 = {
+                        CtClass.doubleType,
+                        CtClass.booleanType,
+                        CtClass.floatType,
+                        CtClass.booleanType,
+                        CtClass.doubleType
+                };
+                String desc3 = Descriptor.ofMethod(CtClass.voidType, params3);
+                Util.setReason("Adjust skill gain for fatigue.");
+                replace = "advanceMultiplicator *= " + GameplayTweaks.class.getName() + ".getFatigueSkillMultiplier($0);"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDescribed(thisClass, ctSkill, "alterSkill", desc3, "hasSleepBonus", replace);
+            }
         }
         catch (NotFoundException | CannotCompileException e) {
             throw new HookException(e);

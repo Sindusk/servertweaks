@@ -126,7 +126,7 @@ public class DeveloperCommands {
 	        if(addDevCommands){
 		    	ClassPool classPool = HookManager.getInstance().getClassPool();
 		    	Class<ServerTweaks> thisClass = ServerTweaks.class;
-		    	classPool.appendClassPath("./mods/servertweaks/servertweaks.jar");
+				classPool.appendClassPath("./mods/ServerTweaks/ServerTweaks.jar");
 		    	
 		    	CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
 		    	String replace = "java.nio.ByteBuffer tempBuffer = $1.duplicate();"
